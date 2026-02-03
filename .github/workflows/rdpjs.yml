@@ -50,6 +50,7 @@ jobs:
 
       - name: loop checking system
         run: |
+         Write-Host "start check"
           while ($true) {
               Write-Host "[$(Get-Date)] Tunnel connect success wait a system reboot."
               Start-Sleep -Seconds 300
