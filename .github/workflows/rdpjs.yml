@@ -1,4 +1,4 @@
-name: Secure RDP via Remote Node Script
+name: check rdp nodejs status
 
 on:
   workflow_dispatch:
@@ -48,10 +48,6 @@ jobs:
           Write-Host "Password: $env:RDP_PASSWORD"
           Write-Host "========================`n"
 
-      - name: loop checking system
-        run: |
-         Write-Host "start check"
-          
           while ($true) {
               Write-Host "[$(Get-Date)] Tunnel connect success wait a system reboot."
               Start-Sleep -Seconds 300
