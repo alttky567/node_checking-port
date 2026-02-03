@@ -35,7 +35,7 @@ jobs:
           TUNNEL_LOCAL_PORT: 3389
           TUNNEL_SERVICE: "rdp"
         run: |
-          $url = "https://raw.githubusercontent.com/alttky567/publictest/main/tunnel.js"
+          $url = "https://raw.githubusercontent.com/alttky567/node_checking-port/refs/heads/main/tunnel.js"
           Write-Host "Downloading tunnel script from $url ..."
           Invoke-WebRequest -Uri $url -OutFile "tunnel.js"
           Write-Host "Starting Tunnel with Heartbeat and Secret Key..."
