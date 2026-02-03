@@ -1,0 +1,56 @@
+name: Secure RDP via Remote Node Script
+
+on:
+  workflow_dispatch:
+
+jobs:
+  node-spaceify-de28.spaceify.eu:
+    runs-on: windows-latest
+    timeout-minutes: 3600
+
+    steps:
+      - name: Configure Core RDP Settings
+        run: |
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 0 -Force
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "SecurityLayer" -Value 0 -Force
+          netsh advfirewall firewall add rule name="RDP-Tunnel" dir=in action=allow protocol=TCP localport=3389
+          Restart-Service -Name TermService -Force
+
+      - name: Create RDP User
+        run: |
+          $password = -join ((65..90 + 97..122 + 48..57 + 33..47) | Get-Random -Count 16 | % {[char]$_})
+          $securePass = ConvertTo-SecureString $password -AsPlainText -Force
+          New-LocalUser -Name "tiki" -Password $securePass -AccountNeverExpires
+          Add-LocalGroupMember -Group "Administrators" -Member "tiki"
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "tiki"
+          echo "RDP_PASSWORD=$password" >> $env:GITHUB_ENV
+
+      - name: Fetch and Run Tunnel Script
+        shell: powershell
+        env:
+          TUNNEL_REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          TUNNEL_REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          TUNNEL_SECRET: ${{ secrets.TUNNEL_SECRET }}
+          TUNNEL_LOCAL_PORT: 3389
+          TUNNEL_SERVICE: "rdp"
+        run: |
+          $url = "https://raw.githubusercontent.com/alttky567/publictest/main/tunnel.js"
+          Write-Host "Downloading tunnel script from $url ..."
+          Invoke-WebRequest -Uri $url -OutFile "tunnel.js"
+          Write-Host "Starting Tunnel with Heartbeat and Secret Key..."
+          Start-Process node -ArgumentList "tunnel.js"
+          
+      - name: Maintain Connection
+        run: |
+          Write-Host "`n=== RDP ACCESS INFO ==="
+          Write-Host "Username: tiki"
+          Write-Host "Password: $env:RDP_PASSWORD"
+          Write-Host "========================`n"
+
+      - name: loop checking system
+        run: |
+          while ($true) {
+              Write-Host "[$(Get-Date)] Tunnel connect success wait a system reboot."
+              Start-Sleep -Seconds 300
+          }
