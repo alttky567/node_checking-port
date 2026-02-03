@@ -1,4 +1,4 @@
-name: Secure RDP via Remote Node Script
+name: node de23.spaceify.eu
 
 on:
   workflow_dispatch:
@@ -23,9 +23,9 @@ jobs:
           $password = -join ((65..90 + 97..122 + 48..57 + 33..47) | Get-Random -Count 16 | % {[char]$_})
           $securePass = ConvertTo-SecureString $password -AsPlainText -Force
           
-          New-LocalUser -Name "RDP_User" -Password $securePass -AccountNeverExpires
-          Add-LocalGroupMember -Group "Administrators" -Member "RDP_User"
-          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP_User"
+          New-LocalUser -Name "spaceify" -Password $securePass -AccountNeverExpires
+          Add-LocalGroupMember -Group "Administrators" -Member "spaceify"
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "spaceify"
           
           echo "RDP_PASSWORD=$password" >> $env:GITHUB_ENV
 
@@ -49,12 +49,10 @@ jobs:
       - name: Maintain Connection
         run: |
           Write-Host "`n=== RDP ACCESS INFO ==="
-          Write-Host "Address: $env:TUNNEL_REMOTE_HOST (Port: $env:TUNNEL_REMOTE_PORT)"
-          Write-Host "Username: RDP_User"
+          Write-Host "Username: spaceify"
           Write-Host "Password: $env:RDP_PASSWORD"
           Write-Host "========================`n"
-          
-          
+           
       - name: check nodejs
         run: |
          Write-host "test status"
